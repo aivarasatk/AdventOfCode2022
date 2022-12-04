@@ -1,4 +1,6 @@
-﻿void Day1()
+﻿using System.Linq;
+
+void Day1()
 {
     var sampleData = File.ReadAllLines("Day1.txt");
 
@@ -180,5 +182,55 @@ void Day3Part2()
         .SelectMany(group => group[0].Intersect(group[1]).Intersect(group[2]))
         .Sum(PointsForPriority);
     
+    Console.WriteLine(result);
+}
+
+void Day4()
+{
+    var sampleData = File.ReadAllLines("Day4.txt");
+
+    var pairs = sampleData.Select(line => line.Split(','))
+        .Select(pair => (pair[0].Split('-'), pair[1].Split('-')))
+        .Select<(string[], string[]), (IEnumerable<int> PairOne, IEnumerable<int> PairTwo)>(pair => (pair.Item1.Select(int.Parse), pair.Item2.Select(int.Parse)));
+
+    var assignments = pairs.Select(pair => 
+        {
+            return (Enumerable.Range(pair.PairOne.First(), pair.PairOne.Last() - pair.PairOne.First() + 1),
+            Enumerable.Range(pair.PairTwo.First(), pair.PairTwo.Last() - pair.PairTwo.First() + 1));
+        });
+
+    var result = assignments.Count(pair =>
+    {
+        if (pair.Item1.Count() >= pair.Item2.Count())
+            return pair.Item2.All(pair.Item1.Contains);
+        
+        return pair.Item1.All(pair.Item2.Contains);
+    });
+
+    Console.WriteLine(result);
+}
+
+void Day4Part2()
+{
+    var sampleData = File.ReadAllLines("Day4.txt");
+
+    var pairs = sampleData.Select(line => line.Split(','))
+        .Select(pair => (pair[0].Split('-'), pair[1].Split('-')))
+        .Select<(string[], string[]), (IEnumerable<int> PairOne, IEnumerable<int> PairTwo)>(pair => (pair.Item1.Select(int.Parse), pair.Item2.Select(int.Parse)));
+
+    var assignments = pairs.Select(pair =>
+    {
+        return (Enumerable.Range(pair.PairOne.First(), pair.PairOne.Last() - pair.PairOne.First() + 1),
+        Enumerable.Range(pair.PairTwo.First(), pair.PairTwo.Last() - pair.PairTwo.First() + 1));
+    });
+
+    var result = assignments.Count(pair =>
+    {
+        if (pair.Item1.Count() >= pair.Item2.Count())
+            return pair.Item2.Any(pair.Item1.Contains);
+
+        return pair.Item1.Any(pair.Item2.Contains);
+    });
+
     Console.WriteLine(result);
 }
