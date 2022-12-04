@@ -20,6 +20,7 @@
 
     Console.WriteLine(max);
 }
+
 void Day1Part2()
 {
     var sampleData = File.ReadAllLines("Day1.txt");
@@ -89,7 +90,6 @@ void Day2()
     Console.WriteLine(points);
 }
 
-Day2Part2();
 void Day2Part2()
 {
     const char RockOpponent = 'A';
@@ -130,4 +130,55 @@ void Day2Part2()
         .Sum(tuple => pointsOutcomes[(tuple.OpponentPlay, tuple.MyPlay)]);
 
     Console.WriteLine(points);
+}
+
+void Day3()
+{
+    var sampleData = File.ReadAllLines("Day3.txt");
+
+    int PointsForPriority(char item)
+    {
+        if(item >= 'a' && item <= 'z')
+            return Math.Abs(item - 'a' + 1);
+
+        return Math.Abs(item - 'A' + 27);
+    }
+
+    var rucksackHalfs = sampleData
+        .Select<string, (string FirstHalf, string SecondHalf)>(line => 
+            (line.Substring(0, line.Length / 2), line.Substring(line.Length / 2)));
+
+    var compartmentMistakes = rucksackHalfs.SelectMany((tuple) => tuple.FirstHalf.Intersect(tuple.SecondHalf));
+
+    var result = compartmentMistakes.Sum(PointsForPriority);
+
+    Console.WriteLine(result);
+}
+
+void Day3Part2()
+{
+    var sampleData = File.ReadAllLines("Day3.txt");
+
+    int PointsForPriority(char item)
+    {
+        if (item >= 'a' && item <= 'z')
+            return Math.Abs(item - 'a' + 1);
+
+        return Math.Abs(item - 'A' + 27);
+    }
+
+    var rucksackGroups = new string[sampleData.Length / 3][];
+    for(var groupId = 0; groupId < sampleData.Length / 3; groupId++)
+    {
+        rucksackGroups[groupId] = sampleData
+            .Skip(groupId * 3)
+            .Take(3)
+            .ToArray();
+    }
+
+    var result = rucksackGroups
+        .SelectMany(group => group[0].Intersect(group[1]).Intersect(group[2]))
+        .Sum(PointsForPriority);
+    
+    Console.WriteLine(result);
 }
