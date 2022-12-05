@@ -234,3 +234,172 @@ void Day4Part2()
 
     Console.WriteLine(result);
 }
+
+void Day5()
+{
+    var sampleData = File.ReadAllLines("Day5.txt");
+
+    var indexOfCrateNumbers = 0;
+    for(int i = 0; i < sampleData.Length; ++i)
+    {
+        if (string.IsNullOrWhiteSpace(sampleData[i]))
+        {
+            indexOfCrateNumbers = i - 1;
+            break;
+        }
+    }
+
+    var stacks = new List<Stack<char>>();
+    foreach(var column in sampleData[indexOfCrateNumbers])
+    {
+        if (!char.IsAsciiDigit(column))
+            continue;
+
+        var cargoIndex = sampleData[indexOfCrateNumbers].IndexOf(column);
+
+        var stack = new Stack<char>();
+        var loopIndex = indexOfCrateNumbers - 1;
+        //loop down to top and push items to stack
+        while (loopIndex >= 0)
+        {
+            var cargo = sampleData[loopIndex][cargoIndex];
+            if (cargo is ' ')
+            {
+                loopIndex--;
+                continue;
+            }
+
+            stack.Push(cargo);
+
+            loopIndex--;
+        }
+
+        stacks.Add(stack);
+    }
+
+    var indexOfMoveList = indexOfCrateNumbers + 2;
+    var movesLines = sampleData.Skip(indexOfMoveList);
+
+    var moves = movesLines.Select<string, (int MoveCount, int MoveFrom, int MoveTo)>(line =>
+    {
+        var trimmedLine = line.Replace("move ", "").Replace("from ", "").Replace("to ", "");
+
+        var moveCount = 0;
+        var moveFrom = 0;
+        var moveTo = 0;
+        if (char.IsAsciiDigit(trimmedLine[1]))
+        {
+            moveCount = int.Parse(string.Join("", trimmedLine.Take(2)));
+            moveFrom = int.Parse(trimmedLine[3].ToString());
+            moveTo = int.Parse(trimmedLine[5].ToString());
+        }
+        else
+        {
+            moveCount = int.Parse(trimmedLine[0].ToString());
+            moveFrom = int.Parse(trimmedLine[2].ToString());
+            moveTo = int.Parse(trimmedLine[4].ToString());
+        }
+
+        return (moveCount, moveFrom, moveTo);
+    });
+
+    foreach(var (moveCount, moveFrom, moveTo) in moves)
+    {
+        for(int i = 0; i < moveCount; i++)
+        {
+            var from = stacks[moveFrom - 1].Pop();
+            stacks[moveTo - 1].Push(from);
+        }
+    }
+
+    foreach(var stack in stacks)
+    {
+        Console.Write(stack.Peek());
+    }
+}
+
+void Day5Part2()
+{
+    var sampleData = File.ReadAllLines("Day5.txt");
+
+    var indexOfCrateNumbers = 0;
+    for (int i = 0; i < sampleData.Length; ++i)
+    {
+        if (string.IsNullOrWhiteSpace(sampleData[i]))
+        {
+            indexOfCrateNumbers = i - 1;
+            break;
+        }
+    }
+
+    var stacks = new List<Stack<char>>();
+    foreach (var column in sampleData[indexOfCrateNumbers])
+    {
+        if (!char.IsAsciiDigit(column))
+            continue;
+
+        var cargoIndex = sampleData[indexOfCrateNumbers].IndexOf(column);
+
+        var stack = new Stack<char>();
+        var loopIndex = indexOfCrateNumbers - 1;
+        //loop down to top and push items to stack
+        while (loopIndex >= 0)
+        {
+            var cargo = sampleData[loopIndex][cargoIndex];
+            if (cargo is ' ')
+            {
+                loopIndex--;
+                continue;
+            }
+
+            stack.Push(cargo);
+
+            loopIndex--;
+        }
+
+        stacks.Add(stack);
+    }
+
+    var indexOfMoveList = indexOfCrateNumbers + 2;
+    var movesLines = sampleData.Skip(indexOfMoveList);
+
+    var moves = movesLines.Select<string, (int MoveCount, int MoveFrom, int MoveTo)>(line =>
+    {
+        var trimmedLine = line.Replace("move ", "").Replace("from ", "").Replace("to ", "");
+
+        var moveCount = 0;
+        var moveFrom = 0;
+        var moveTo = 0;
+        if (char.IsAsciiDigit(trimmedLine[1]))
+        {
+            moveCount = int.Parse(string.Join("", trimmedLine.Take(2)));
+            moveFrom = int.Parse(trimmedLine[3].ToString());
+            moveTo = int.Parse(trimmedLine[5].ToString());
+        }
+        else
+        {
+            moveCount = int.Parse(trimmedLine[0].ToString());
+            moveFrom = int.Parse(trimmedLine[2].ToString());
+            moveTo = int.Parse(trimmedLine[4].ToString());
+        }
+
+        return (moveCount, moveFrom, moveTo);
+    });
+
+    foreach (var (moveCount, moveFrom, moveTo) in moves)
+    {
+        var cargoMove = new List<char>();
+        for (int i = 0; i < moveCount; i++)
+            cargoMove.Add(stacks[moveFrom - 1].Pop());
+
+        cargoMove.Reverse();
+
+        foreach(var cargo in cargoMove)
+            stacks[moveTo - 1].Push(cargo);
+    }
+
+    foreach (var stack in stacks)
+    {
+        Console.Write(stack.Peek());
+    }
+}
