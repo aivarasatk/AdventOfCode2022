@@ -403,3 +403,59 @@ void Day5Part2()
         Console.Write(stack.Peek());
     }
 }
+
+void Day6()
+{
+    var sampleData = File.ReadAllText("Day6.txt");
+
+
+    for (int i = 0; i < sampleData.Length; ++i)
+    {
+        var uniqueChars = new List<char>
+        {
+            sampleData[i],
+            sampleData[i + 1],
+            sampleData[i + 2],
+            sampleData[i + 3]
+        };
+
+        if (uniqueChars.Distinct().Count() is 4)
+        {
+            Console.WriteLine(i + 4);
+            break;
+        }
+    }
+}
+
+void Day6Part2()
+{
+    var sampleData = File.ReadAllText("Day6.txt");
+
+
+    for (int i = 0; i < sampleData.Length; ++i)
+    {
+        var uniqueChars = new List<char>
+        {
+            sampleData[i],
+            sampleData[i + 1],
+            sampleData[i + 2],
+            sampleData[i + 3],
+            sampleData[i + 4],
+            sampleData[i + 5],
+            sampleData[i + 6],
+            sampleData[i + 7],
+            sampleData[i + 8],
+            sampleData[i + 9],
+            sampleData[i + 10],
+            sampleData[i + 11],
+            sampleData[i + 12],
+            sampleData[i + 13],
+        };
+
+        if (uniqueChars.Distinct().Count() is 14)
+        {
+            Console.WriteLine(i + 14);
+            break;
+        }
+    }
+}
