@@ -459,3 +459,140 @@ void Day6Part2()
         }
     }
 }
+
+void Day7()
+{
+    var sampleData = File.ReadLines("Day7.txt").Skip(1);
+
+    var unique = Guid.NewGuid().ToString();
+    Directory.CreateDirectory(unique);
+    Directory.SetCurrentDirectory(unique);
+    var baseDir = Directory.GetCurrentDirectory();
+
+    foreach (var command in sampleData)
+    {
+        var parts = command.Split(" ");
+
+        if (parts[0] is "$")//command
+        {
+            switch (parts[1])
+            {
+                case "cd" when parts[2] is "..":
+                    var parent = Directory.GetParent(Directory.GetCurrentDirectory());
+                    Directory.SetCurrentDirectory(parent.FullName);
+                    break;
+                case "cd":
+                    Directory.CreateDirectory(parts[2]);
+                    Directory.SetCurrentDirectory(parts[2]);
+                    break;
+                case "ls":
+                    break;
+            }
+        }
+        else //items and dirs
+        {
+            switch(parts[0])
+            {
+                case "dir":
+                    Directory.CreateDirectory(parts[1]);
+                    break;
+                default:
+                    File.Create($"{Directory.GetCurrentDirectory()}/{parts[0]}_{parts[1]}");
+                    break;
+            }
+        }
+    }
+
+    var dirs = Directory.GetDirectories(baseDir, "*", SearchOption.AllDirectories);
+
+    var sum = 0;
+    foreach(var dir in dirs.Append(baseDir)) 
+    { 
+        var files = Directory.GetFiles(dir, "*", SearchOption.AllDirectories);
+        
+        var folderSize = files.Select(file => new FileInfo(file).Name)
+            .Select(name => name.Substring(0, name.IndexOf("_")))
+            .Select(int.Parse)
+            .Sum();
+
+        if(folderSize <= 100000)
+            sum += folderSize;
+    }
+
+    Console.WriteLine(sum);
+}
+
+void Day7Part2()
+{
+    var sampleData = File.ReadLines("Day7.txt").Skip(1);
+
+    var unique = Guid.NewGuid().ToString();
+    Directory.CreateDirectory(unique);
+    Directory.SetCurrentDirectory(unique);
+    var baseDir = Directory.GetCurrentDirectory();
+
+    foreach (var command in sampleData)
+    {
+        var parts = command.Split(" ");
+
+        if (parts[0] is "$")//command
+        {
+            switch (parts[1])
+            {
+                case "cd" when parts[2] is "..":
+                    var parent = Directory.GetParent(Directory.GetCurrentDirectory());
+                    Directory.SetCurrentDirectory(parent.FullName);
+                    break;
+                case "cd":
+                    Directory.CreateDirectory(parts[2]);
+                    Directory.SetCurrentDirectory(parts[2]);
+                    break;
+                case "ls":
+                    break;
+            }
+        }
+        else //items and dirs
+        {
+            switch (parts[0])
+            {
+                case "dir":
+                    Directory.CreateDirectory(parts[1]);
+                    break;
+                default:
+                    File.Create($"{Directory.GetCurrentDirectory()}/{parts[0]}_{parts[1]}");
+                    break;
+            }
+        }
+    }
+
+    var dirs = Directory.GetDirectories(baseDir, "*", SearchOption.AllDirectories);
+
+    var folderSizes = new List<int>();
+    foreach (var dir in dirs.Append(baseDir))
+    {
+        var files = Directory.GetFiles(dir, "*", SearchOption.AllDirectories);
+
+        var folderSize = files.Select(file => new FileInfo(file).Name)
+            .Select(name => name.Substring(0, name.IndexOf("_")))
+            .Select(int.Parse)
+            .Sum();
+
+        folderSizes.Add(folderSize);
+    }
+
+     var baseDirFiles = Directory.GetFiles(baseDir, "*", SearchOption.AllDirectories);
+
+     var usedSpace = baseDirFiles.Select(file => new FileInfo(file).Name)
+        .Select(name => name.Substring(0, name.IndexOf("_")))
+        .Select(int.Parse)
+        .Sum();
+
+    foreach(var size in folderSizes.Order())
+    {
+        if (70000000 - usedSpace + size is >= 30000000)
+        {
+            Console.WriteLine(size);
+           break;
+        }
+    }
+}
