@@ -596,3 +596,125 @@ void Day7Part2()
         }
     }
 }
+
+void Day8()
+{
+    var sampleData = File.ReadAllLines("Day8.txt");
+
+    var defaultVisibleTrees = sampleData[0].Length * 2 + sampleData.Length * 2 - 4; //-4 is to account for top and bottom edges incluced in "sampleData[0].Length * 2"
+
+    var data = sampleData.Select(line => line.ToCharArray()).ToArray();
+
+    var visibleTrees = 0;
+    for(int row = 1; row < data.Length - 1; row++)
+    {
+        for(int column = 1; column < data[row].Length - 1; column++) 
+        {
+            if (Day8IsVisibleInFromDirection(data, row, column - 1, data[row][column], "left")
+                || Day8IsVisibleInFromDirection(data, row, column + 1, data[row][column], "right")
+                || Day8IsVisibleInFromDirection(data, row + 1, column, data[row][column], "down")
+                || Day8IsVisibleInFromDirection(data, row - 1, column, data[row][column], "up"))
+                ++visibleTrees;
+        }
+    }
+
+    Console.WriteLine(visibleTrees + defaultVisibleTrees);
+}
+
+void Day8Part2()
+{
+    var sampleData = File.ReadAllLines("Day8.txt");
+
+    var data = sampleData.Select(line => line.ToCharArray()).ToArray();
+
+    var maxScenicScore = 0;
+    for (int row = 1; row < data.Length - 1; row++)
+    {
+        for (int column = 1; column < data[row].Length - 1; column++)
+        {
+            var score = Day8ScenicScore(data, row, column - 1, data[row][column], "left")
+                * Day8ScenicScore(data, row, column + 1, data[row][column], "right")
+                * Day8ScenicScore(data, row + 1, column, data[row][column], "down")
+                * Day8ScenicScore(data, row - 1, column, data[row][column], "up");
+
+            if(score > maxScenicScore)
+            {
+                maxScenicScore = score;
+            }
+        }
+    }
+
+    Console.WriteLine(maxScenicScore);
+}
+
+bool Day8IsVisibleInFromDirection(char[][] data, int row, int column, char tree, string direction)
+{
+    var allTreesShorter = true;
+    switch (direction)
+    {
+        case "left":
+            for(int i = column; i >= 0; i--)
+                if (data[row][i] >= tree)
+                    allTreesShorter = false;
+            break;
+        case "right":
+            for (int i = column; i < data[0].Length; i++)
+                if (data[row][i] >= tree)
+                    allTreesShorter = false;
+            break;
+        case "down":
+            for (int i = row; i < data.Length; i++)
+                if (data[i][column] >= tree)
+                    allTreesShorter = false;
+            break;
+        case "up":
+            for (int i = row; i >= 0; i--)
+                if (data[i][column] >= tree)
+                    allTreesShorter = false;
+            break;
+    }
+
+    return allTreesShorter;
+}
+
+int Day8ScenicScore(char[][] data, int row, int column, char tree, string direction)
+{
+    var count = 0;
+    switch (direction)
+    {
+        case "left":
+            for (int i = column; i >= 0; i--)
+            {
+                count++;
+                if (data[row][i] >= tree)
+                    break;
+            }
+            break;
+        case "right":
+            for (int i = column; i < data[0].Length; i++)
+            {
+                count++;
+                if (data[row][i] >= tree)
+                    break;
+            }
+            break;
+        case "down":
+            for (int i = row; i < data.Length; i++)
+            {
+                count++;
+                if (data[i][column] >= tree)
+                    break;
+            }
+            break;
+        case "up":
+            for (int i = row; i >= 0; i--)
+            {
+                count++;
+                if (data[i][column] >= tree)
+                    break;
+            }    
+            break;
+    }
+
+    return count;
+}
