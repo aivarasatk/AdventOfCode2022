@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
+using System.Numerics;
 
 void Day1()
 {
@@ -810,4 +811,91 @@ bool Day9IsAdjacent(int headRow, int headColumn, int tailRow, int tailColumn)
         'R' when headRow != tailRow => (headRow, tailColumn + 1), // tail moves left
         _ => throw new NotImplementedException()
     };
+}
+
+void Day10()
+{
+    var sampleData = File.ReadAllLines("Day10.txt");
+
+    var cycleChecks = new[] { 20, 60, 100, 140, 180, 220 };
+
+    var cycle = 1;
+    var registerValue = 1;
+    var result = 0;
+    foreach(var command in sampleData)
+    {
+        if(command is "noop")
+        {
+            //do nothing
+            if (cycleChecks.Contains(cycle))
+                result += registerValue * cycle;
+
+            cycle++;
+        }
+        else
+        {
+            for(int i = 0; i < 2; ++i)
+            {
+                if (cycleChecks.Contains(cycle))
+                    result += registerValue * cycle;
+
+                cycle++;
+            }
+            registerValue += int.Parse(command.Split(" ")[1]);
+        }
+
+        if (cycle > 220)
+            break;
+    }
+    Console.WriteLine(result);
+
+}
+
+void Day10Part2()
+{
+    var sampleData = File.ReadAllLines("Day10.txt");
+
+    var cycle = 1;
+    var registerValue = 1;
+    foreach (var command in sampleData)
+    {
+        if (command is "noop")
+        {
+            char pixel = Day10Pixel(cycle, registerValue);
+
+            Day10Draw(cycle, pixel);
+
+            cycle++;
+        }
+        else
+        {
+            for (int i = 0; i < 2; ++i)
+            {
+                char pixel = Day10Pixel(cycle, registerValue);
+
+                Day10Draw(cycle, pixel);
+
+                cycle++;
+            }
+            registerValue += int.Parse(command.Split(" ")[1]);
+        }
+    }
+}
+
+void Day10Draw(int cycle, char pixel)
+{
+    Console.Write(pixel);
+
+    if (cycle % 40 is 0)
+        Console.WriteLine();
+}
+
+char Day10Pixel(int cycle, int registerValue)
+{
+    char pixel = '.';
+    var index = (cycle - 1) % 40;
+    if (registerValue == index || registerValue - 1 == index || registerValue + 1 == index)
+        pixel = '#';
+
+    return pixel;
 }
