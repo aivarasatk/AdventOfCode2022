@@ -1,4 +1,7 @@
-﻿using System.Linq;
+﻿using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Net;
 
 void Day1()
 {
@@ -717,4 +720,94 @@ int Day8ScenicScore(char[][] data, int row, int column, char tree, string direct
     }
 
     return count;
+}
+
+void Day9()
+{
+    var sampleData = File.ReadAllLines("Day9.txt");
+
+    var rowCount = 2000;
+    var movementGrid = new int[rowCount][];
+    for(int i = 0; i < movementGrid.Length; ++i)
+        movementGrid[i] = new int[rowCount];
+
+    movementGrid[rowCount / 2][rowCount / 2] = 1; //start position is visited
+
+    var (headRow, headColumn) = (rowCount/2 , rowCount / 2);
+    var (tailRow, tailColumn) = (rowCount/2, rowCount / 2);
+
+    foreach (var line in sampleData)
+    {
+        var (move, repetition) = (line[0], int.Parse(line.Split(" ")[1]));
+
+        foreach(var _ in Enumerable.Repeat(0, repetition))
+        {
+            var (previousHeadRow, previousHeadColumn) = (headRow, headColumn);
+            (headRow, headColumn) = Day9MoveHead(headRow, headColumn, move);
+            if(!Day9IsAdjacent(headRow, headColumn, tailRow, tailColumn))
+                (tailRow, tailColumn) = Day9MoveTail(previousHeadRow, previousHeadColumn, headRow, headColumn, tailRow, tailColumn, move);
+
+            movementGrid[tailRow][tailColumn]++;
+        }
+    }
+
+    var visited = 0;
+    for(int row = 0; row < movementGrid.Length; ++row)
+    {
+        for(int column = 0; column < movementGrid[0].Length; ++column)
+        {
+            if (movementGrid[row][column] > 0)
+                visited++;
+        }
+    }
+
+    Console.WriteLine(visited);
+}
+
+bool Day9IsAdjacent(int headRow, int headColumn, int tailRow, int tailColumn)
+{
+    return headRow == tailRow && headColumn == tailColumn
+        || (Math.Abs(headRow - tailRow) is 1 && headColumn == tailColumn) //is up or down
+        || headRow == tailRow && (Math.Abs(headColumn - tailColumn) is 1)//is left or right
+        || headRow - tailRow is 1 && headColumn - tailColumn is 1 // down right
+        || headRow - tailRow is 1 && headColumn - tailColumn is -1 // down left
+        || headRow - tailRow is -1 && headColumn - tailColumn is 1 //up right
+        || headRow - tailRow is -1 && headColumn - tailColumn is -1 //up left
+        ;
+}
+
+(int row, int column) Day9MoveHead(int row, int column, char move) => move switch
+{
+    'U' => (row - 1, column),
+    'D' => (row + 1, column),
+    'L' => (row, column - 1),
+    'R' => (row, column + 1),
+    _ => throw new NotImplementedException()
+};
+
+(int row, int column) Day9MoveTail(
+    int previousHeadRow,
+    int previousHeadColumn,
+    int headRow,
+    int headColumn,
+    int tailRow,
+    int tailColumn,
+    char move) 
+{
+    if (Day9IsAdjacent(headRow, headColumn, tailRow, tailColumn))
+        return (tailRow, tailColumn);
+
+    return move switch
+    {
+        'U' when headColumn == tailColumn => (tailRow - 1, tailColumn), // tail moves up
+        'D' when headColumn == tailColumn => (tailRow + 1, tailColumn), // tail moves down
+        'L' when headRow == tailRow => (tailRow, tailColumn - 1), // tail moves left
+        'R' when headRow == tailRow => (tailRow, tailColumn + 1), // tail moves right
+
+        'U' when headColumn != tailColumn => (tailRow - 1, headColumn), // tail moves up to head column
+        'D' when headColumn != tailColumn => (tailRow + 1, headColumn), // tail moves down
+        'L' when headRow != tailRow => (headRow, tailColumn - 1), // tail moves left
+        'R' when headRow != tailRow => (headRow, tailColumn + 1), // tail moves left
+        _ => throw new NotImplementedException()
+    };
 }
