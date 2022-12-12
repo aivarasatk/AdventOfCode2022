@@ -901,7 +901,6 @@ char Day10Pixel(int cycle, int registerValue)
     return pixel;
 }
 
-Day12();
 void Day12()
 {
     var sampleData = File.ReadAllLines("Day12.txt");
@@ -931,6 +930,7 @@ void Day12()
         }
     }
 
+    //ShortestPathFunction was borrowed from google and adjusted https://www.koderdojo.com/blog/breadth-first-search-and-shortest-path-in-csharp-and-net-core
     Console.WriteLine(ShortestPathFunction(graph, startRow, startColumn, endRow, endColumn));
 }
 
