@@ -934,6 +934,7 @@ void Day12()
     Console.WriteLine(ShortestPathFunction(graph, startRow, startColumn, endRow, endColumn));
 }
 
+Day12Part2();
 void Day12Part2()
 {
     var sampleData = File.ReadAllLines("Day12.txt");
@@ -952,14 +953,12 @@ void Day12Part2()
             if (graph[i][j] is 'a')
             {
                 startList.Add((i, j));
-                continue;
             }
 
             if (graph[i][j] is 'S')
             {
                 startList.Add((i, j));
                 graph[i][j] = 'a';
-                continue;
             }
 
             if (graph[i][j] is 'E')
