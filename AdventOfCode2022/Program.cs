@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
+using System.Net.Mail;
 using System.Numerics;
 
 void Day1()
@@ -898,4 +899,143 @@ char Day10Pixel(int cycle, int registerValue)
         pixel = '#';
 
     return pixel;
+}
+
+Day12();
+void Day12()
+{
+    var sampleData = File.ReadAllLines("Day12.txt");
+
+    var graph = new char[sampleData.Length][];
+
+    for(int i = 0; i < sampleData.Length; ++i)
+        graph[i] = sampleData[i].ToCharArray();
+
+    var (startRow, startColumn) = (0, 0);
+    var (endRow, endColumn) = (0, 0);
+    for (int i = 0; i < graph.Length; i++)
+    {
+        for (int j = 0; j < graph[0].Length; j++)
+        {
+            if (graph[i][j] is 'S')
+            {
+                (startRow, startColumn) = (i, j);
+                graph[i][j] = 'a';
+            }
+
+            if (graph[i][j] is 'E')
+            {
+                (endRow, endColumn) = (i, j);
+                graph[i][j] = 'z';
+            }
+        }
+    }
+
+    Console.WriteLine(ShortestPathFunction(graph, startRow, startColumn, endRow, endColumn));
+}
+
+void Day12Part2()
+{
+    var sampleData = File.ReadAllLines("Day12.txt");
+
+    var graph = new char[sampleData.Length][];
+
+    for (int i = 0; i < sampleData.Length; ++i)
+        graph[i] = sampleData[i].ToCharArray();
+
+    var startList = new List<(int row, int column)>();
+    var (endRow, endColumn) = (0, 0);
+    for (int i = 0; i < graph.Length; i++)
+    {
+        for (int j = 0; j < graph[0].Length; j++)
+        {
+            if (graph[i][j] is 'a')
+            {
+                startList.Add((i, j));
+                continue;
+            }
+
+            if (graph[i][j] is 'S')
+            {
+                startList.Add((i, j));
+                graph[i][j] = 'a';
+                continue;
+            }
+
+            if (graph[i][j] is 'E')
+            {
+                (endRow, endColumn) = (i, j);
+                graph[i][j] = 'z';
+            }
+        }
+    }
+
+    var shortest = startList.Min(vertex => ShortestPathFunction(graph, vertex.row, vertex.column, endRow, endColumn));
+    Console.WriteLine(shortest);
+}
+
+int ShortestPathFunction(char[][] graph, int startRow, int startColumn, int endRow, int endColumn)
+{
+    var previous = new Dictionary<(int row, int column), (int row, int column)>();
+
+    var queue = new Queue<(int row, int column)>();
+    queue.Enqueue((startRow, startColumn));
+
+    while (queue.Count > 0)
+    {
+        var vertex = queue.Dequeue();
+        foreach (var neighbor in Day12Adjacency(graph, vertex))
+        {
+            if (previous.ContainsKey(neighbor))
+                continue;
+
+            previous[neighbor] = vertex;
+            queue.Enqueue(neighbor);
+        }
+    }
+
+    var path = new List<(int row, int column)> { };
+
+    try
+    {
+        var current = (endRow, endColumn);
+        while (!current.Equals((startRow, startColumn)))
+        {
+            path.Add(current);
+            current = previous[current];
+        }
+
+        return path.Count;
+    }
+    catch (Exception)// lol but solved
+    {
+        return int.MaxValue;
+    }
+    
+}
+
+IEnumerable<(int Row, int Column)> Day12Adjacency(char[][] graph, (int Row, int Column) vertex)
+{
+    var currentHeight = graph[vertex.Row][vertex.Column];
+
+    if (vertex.Row + 1 < graph.Length
+        && (graph[vertex.Row + 1][vertex.Column] <= currentHeight
+        || graph[vertex.Row + 1][vertex.Column] - currentHeight is 1))
+        yield return (vertex.Row + 1, vertex.Column);
+
+    if (vertex.Row - 1 >= 0
+        && (graph[vertex.Row - 1][vertex.Column] <= currentHeight
+        || graph[vertex.Row - 1][vertex.Column] - currentHeight is 1))
+        yield return (vertex.Row - 1, vertex.Column);
+
+    if (vertex.Column + 1 < graph[0].Length
+        && (graph[vertex.Row][vertex.Column + 1] <= currentHeight
+        || graph[vertex.Row][vertex.Column + 1] - currentHeight is 1))
+        yield return (vertex.Row, vertex.Column + 1);
+
+    if (vertex.Column - 1 >= 0
+        && (graph[vertex.Row][vertex.Column - 1] <= currentHeight
+        || graph[vertex.Row][vertex.Column - 1] - currentHeight is 1))
+        yield return (vertex.Row, vertex.Column - 1);
+
 }
