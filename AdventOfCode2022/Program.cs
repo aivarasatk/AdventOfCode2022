@@ -1007,7 +1007,7 @@ int ShortestPathFunction(char[][] graph, int startRow, int startColumn, int endR
 
         return path.Count;
     }
-    catch (Exception)// lol but solved
+    catch (Exception)// lol but solved part 2. (part 1 was ok)
     {
         return int.MaxValue;
     }
