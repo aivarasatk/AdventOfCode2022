@@ -931,10 +931,9 @@ void Day12()
     }
 
     //ShortestPathFunction was borrowed from google and adjusted https://www.koderdojo.com/blog/breadth-first-search-and-shortest-path-in-csharp-and-net-core
-    Console.WriteLine(ShortestPathFunction(graph, startRow, startColumn, endRow, endColumn));
+    Console.WriteLine(Day12ShortestPathFunction(graph, startRow, startColumn, endRow, endColumn));
 }
 
-Day12Part2();
 void Day12Part2()
 {
     var sampleData = File.ReadAllLines("Day12.txt");
@@ -969,11 +968,11 @@ void Day12Part2()
         }
     }
 
-    var shortest = startList.Min(vertex => ShortestPathFunction(graph, vertex.row, vertex.column, endRow, endColumn));
+    var shortest = startList.Min(vertex => Day12ShortestPathFunction(graph, vertex.row, vertex.column, endRow, endColumn));
     Console.WriteLine(shortest);
 }
 
-int ShortestPathFunction(char[][] graph, int startRow, int startColumn, int endRow, int endColumn)
+int Day12ShortestPathFunction(char[][] graph, int startRow, int startColumn, int endRow, int endColumn)
 {
     var previous = new Dictionary<(int row, int column), (int row, int column)>();
 
