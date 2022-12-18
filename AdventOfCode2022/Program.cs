@@ -901,6 +901,121 @@ char Day10Pixel(int cycle, int registerValue)
     return pixel;
 }
 
+void Day11()
+{
+    var sampleData = File.ReadAllLines("Day11.txt");
+
+    var monkeys = sampleData.Where(line => !string.IsNullOrWhiteSpace(line))
+        .Chunk(6)
+        .Select(monkeyLines => monkeyLines[1..].Select(line => line.Trim()).ToArray())//skip monkey number prefix line
+        .Select(monkeyLines =>
+        {
+            return new Day11Monkey(monkeyLines[0].Substring("Starting items: ".Length).Split(", ").Select(BigInteger.Parse).ToList(),
+                monkeyLines[1].Substring("Operation: new = old ".Length)[0],
+                monkeyLines[1].Split(" ").Last(),
+                int.Parse(monkeyLines[2].Split(" ").Last()),
+                int.Parse(monkeyLines[3].Last().ToString()),
+                int.Parse(monkeyLines[4].Last().ToString()));
+        })
+        .ToArray();
+
+
+    var inspectedItems = new int[monkeys.Length];
+    for(int i = 0; i < 20; ++i)
+    {
+        int monkeyIndex = 0;
+        foreach(var monkey in monkeys)
+        {
+
+            foreach(var item in monkey.ItemWorryLevels)
+            {
+                var worryLevel = (decimal) item;
+                worryLevel = monkey.OperationAmount switch
+                {
+                    "old" => worryLevel *= worryLevel,
+                    _ => monkey.Operation switch
+                    {
+                        '*' => worryLevel * int.Parse(monkey.OperationAmount),
+                        '+' => worryLevel + int.Parse(monkey.OperationAmount)
+                    }
+                };
+
+                worryLevel /= 3;
+                worryLevel = Math.Floor(worryLevel);
+
+                if ((int)worryLevel % monkey.TestDivisibleBy == 0)
+                    monkeys[monkey.ThrowToMonkeyWhenTrue].ItemWorryLevels.Add(new BigInteger(worryLevel));
+                else
+                    monkeys[monkey.ThrowToMonkeyWhenFalse].ItemWorryLevels.Add(new BigInteger(worryLevel));
+            }
+            inspectedItems[monkeyIndex] += monkey.ItemWorryLevels.Count;
+            monkey.ItemWorryLevels.Clear();
+
+            monkeyIndex++;
+        }        
+    }
+
+    var maxCounts = inspectedItems.OrderByDescending(_ => _).ToArray();
+    Console.WriteLine(maxCounts[0] * maxCounts[1]);
+}
+
+void Day11Part2()// Not working
+{
+    var sampleData = File.ReadAllLines("Day11.txt");
+
+    var monkeys = sampleData.Where(line => !string.IsNullOrWhiteSpace(line))
+        .Chunk(6)
+        .Select(monkeyLines => monkeyLines[1..].Select(line => line.Trim()).ToArray())//skip monkey number prefix line
+        .Select(monkeyLines =>
+        {
+            return new Day11MonkeyPart2(monkeyLines[0].Substring("Starting items: ".Length).Split(", ").Select(BigInteger.Parse).ToList(),
+                monkeyLines[1].Substring("Operation: new = old ".Length)[0],
+                monkeyLines[1].Split(" ").Last(),
+                monkeyLines[1].Split(" ").Last() is "old" ? 0 : BigInteger.Parse(monkeyLines[1].Split(" ").Last()),
+                int.Parse(monkeyLines[2].Split(" ").Last()),
+                int.Parse(monkeyLines[3].Last().ToString()),
+                int.Parse(monkeyLines[4].Last().ToString())) ;
+        })
+        .ToArray();
+
+
+    var inspectedItems = new int[monkeys.Length];
+    var zero = new BigInteger(0);
+    for (int i = 0; i < 10_000; ++i)
+    {
+        int monkeyIndex = 0;
+        foreach (var monkey in monkeys)
+        {
+            foreach (var item in monkey.ItemWorryLevels)
+            {
+                var worryLevel = item;
+                worryLevel = monkey.OperationAmount switch
+                {
+                    "old" => worryLevel * worryLevel,
+                    _ => monkey.Operation switch
+                    {
+                        '*' => worryLevel * monkey.OperationDigitAmount,
+                        '+' => worryLevel + monkey.OperationDigitAmount
+                    }
+                };
+
+                if (worryLevel % monkey.TestDivisibleBy == zero)
+                    monkeys[monkey.ThrowToMonkeyWhenTrue].ItemWorryLevels.Add(worryLevel);
+                else
+                    monkeys[monkey.ThrowToMonkeyWhenFalse].ItemWorryLevels.Add(worryLevel);
+            }
+            inspectedItems[monkeyIndex] += monkey.ItemWorryLevels.Count;
+            monkey.ItemWorryLevels.Clear();
+
+            monkeyIndex++;
+        }
+    }
+
+    var maxCounts = inspectedItems.OrderByDescending(_ => _).ToArray();
+    Console.WriteLine((long)maxCounts[0] * maxCounts[1]);
+}
+
+
 void Day12()
 {
     var sampleData = File.ReadAllLines("Day12.txt");
@@ -1037,3 +1152,21 @@ IEnumerable<(int Row, int Column)> Day12Adjacency(char[][] graph, (int Row, int 
         yield return (vertex.Row, vertex.Column - 1);
 
 }
+
+
+record Day11Monkey(
+    List<BigInteger> ItemWorryLevels,
+    char Operation,
+    string OperationAmount,
+    BigInteger TestDivisibleBy,
+    int ThrowToMonkeyWhenTrue,
+    int ThrowToMonkeyWhenFalse);
+
+record Day11MonkeyPart2(
+    List<BigInteger> ItemWorryLevels,
+    char Operation,
+    string OperationAmount,
+    BigInteger OperationDigitAmount,
+    BigInteger TestDivisibleBy,
+    int ThrowToMonkeyWhenTrue,
+    int ThrowToMonkeyWhenFalse);
