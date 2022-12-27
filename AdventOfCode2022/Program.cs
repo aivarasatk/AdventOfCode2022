@@ -1,9 +1,4 @@
-﻿using System.Data.Common;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Net;
-using System.Net.Mail;
-using System.Numerics;
+﻿using System.Numerics;
 
 void Day1()
 {
@@ -1153,6 +1148,223 @@ IEnumerable<(int Row, int Column)> Day12Adjacency(char[][] graph, (int Row, int 
 
 }
 
+void Day13()
+{
+    var sampleData = File.ReadAllLines("Day13.txt");
+
+    var packetPairs = sampleData.Where(line => !string.IsNullOrWhiteSpace(line))
+        .Chunk(2);
+
+    var pairItems = new List<(List<char[]> PairOne, List<char[]> PairTwo)>();
+
+    foreach(var pair in packetPairs)
+    {
+        var pairOne = Day13GeneratePairItems(pair[0]);
+        var pairTwo = Day13GeneratePairItems(pair[1]);
+
+        pairItems.Add((pairOne, pairTwo));
+    }
+}
+
+List<char[]> Day13GeneratePairItems(string pair)
+{
+    var (openningCount, closingCount) = (0, 0);
+    var itemStack = new Stack<char>();
+
+    foreach(var part in pair)
+    {
+        if (part is '[')
+            openningCount++;
+        else if (part is ']')
+            closingCount++;
+
+        itemStack.Push(part);
+
+    }
+    return null;//TODO - make work
+}
+
+void Day14()
+{
+    var sampleData = File.ReadAllLines("Day14.txt");
+
+    const int Rock = 1;
+    const int Air = 0;
+    const int Sand = 8;
+
+    var rockLines = sampleData
+        .Select(line => line.Trim().Split(" -> "))
+        .Select(line => 
+        {
+            (int X, int Y) RetrieveCoords(string coordCombo)
+            {
+                return (int.Parse(coordCombo.Split(",")[0]), int.Parse(coordCombo.Split(",")[1]));
+            }
+
+            return line.Select(RetrieveCoords).ToArray();
+        })
+        .ToArray();
+
+    var maxX = rockLines.SelectMany(coord => coord).MaxBy(coord => coord.X).X + 1;
+    var maxY = rockLines.SelectMany(coord => coord).MaxBy(coord => coord.Y).Y + 1;
+
+    var cave = new int[maxY][];
+
+    for(int i = 0; i < maxY; ++i)
+        cave[i] = new int[maxX];
+
+    foreach (var rockLine in rockLines)
+    {
+        for(int i = 1; i < rockLine.Length; ++i)
+        {
+            if (rockLine[i - 1].X == rockLine[i].X)
+            {
+                var sign = Math.Sign(rockLine[i - 1].Y - rockLine[i].Y) is 1 ? -1 : 1;
+                var dist = Math.Abs(rockLine[i - 1].Y - rockLine[i].Y);
+                for (int j = 0; j < dist + 1; j++)
+                    cave[j * sign + rockLine[i - 1].Y][rockLine[i].X] = Rock;
+            }
+            else
+            {
+                var sign = Math.Sign(rockLine[i - 1].X - rockLine[i].X) is 1 ? -1 : 1;
+                var dist = Math.Abs(rockLine[i - 1].X - rockLine[i].X);
+                for (int j = 0; j < dist + 1; j++)
+                    cave[rockLine[i].Y][j * sign + rockLine[i - 1].X] = Rock;
+            }
+
+        }
+    }
+    
+    var counter = 0;
+    
+    while (true)
+    {
+        var startX = 500;
+        var startY = 0;
+        var sandLands = false;
+        while (startX - 1 >= 0 && startX + 1 < maxX && startY >= 0 && startY + 1 < maxY)
+        {
+            if (cave[startY][startX] is Air && cave[startY + 1][startX] is Air) // falling
+            {
+                startY++;
+            }
+            else if (cave[startY][startX] is Air && (cave[startY + 1][startX] is Rock or Sand) && (cave[startY + 1][startX - 1] is Air)) //move down left
+            {
+                startX--;
+                startY++;
+            }
+            else if (cave[startY][startX] is Air && (cave[startY + 1][startX] is Rock or Sand) && (cave[startY + 1][startX + 1] is Air)) //move down right
+            {
+                startX++;
+                startY++;
+            }
+            else
+            {
+                cave[startY][startX] = Sand;
+                sandLands = true;
+                counter++;
+                break;
+            }
+        }
+
+        if (!sandLands)
+            break;
+    }
+
+    Console.WriteLine(counter);
+}
+
+void Day14_Part2()
+{
+    var sampleData = File.ReadAllLines("Day14.txt");
+
+    const int Rock = 1;
+    const int Air = 0;
+    const int Sand = 8;
+
+    var rockLines = sampleData
+        .Select(line => line.Trim().Split(" -> "))
+        .Select(line =>
+        {
+            (int X, int Y) RetrieveCoords(string coordCombo)
+            {
+                return (int.Parse(coordCombo.Split(",")[0]), int.Parse(coordCombo.Split(",")[1]));
+            }
+
+            return line.Select(RetrieveCoords).ToArray();
+        })
+        .ToArray();
+
+    var maxX = 10000;
+    var maxY = rockLines.SelectMany(coord => coord).MaxBy(coord => coord.Y).Y + 1 + 2;
+
+    var cave = new int[maxY][];
+
+    for (int i = 0; i < maxY; ++i)
+        cave[i] = new int[maxX];
+    
+    for(int i = 0; i < maxX; ++i)
+        cave[maxY - 1][i] = Rock;
+
+    foreach (var rockLine in rockLines)
+    {
+        for (int i = 1; i < rockLine.Length; ++i)
+        {
+            if (rockLine[i - 1].X == rockLine[i].X)
+            {
+                var sign = Math.Sign(rockLine[i - 1].Y - rockLine[i].Y) is 1 ? -1 : 1;
+                var dist = Math.Abs(rockLine[i - 1].Y - rockLine[i].Y);
+                for (int j = 0; j < dist + 1; j++)
+                    cave[j * sign + rockLine[i - 1].Y][rockLine[i].X] = Rock;
+            }
+            else
+            {
+                var sign = Math.Sign(rockLine[i - 1].X - rockLine[i].X) is 1 ? -1 : 1;
+                var dist = Math.Abs(rockLine[i - 1].X - rockLine[i].X);
+                for (int j = 0; j < dist + 1; j++)
+                    cave[rockLine[i].Y][j * sign + rockLine[i - 1].X] = Rock;
+            }
+
+        }
+    }
+
+    var counter = 0;
+
+    while (true)
+    {
+        var startX = 500;
+        var startY = 0;
+
+        while (startX - 1 >= 0 && startX + 1 < maxX && startY >= 0 && startY + 1 < maxY)
+        {
+            if (cave[startY][startX] is Air && cave[startY + 1][startX] is Air) // falling
+            {
+                startY++;
+            }
+            else if (cave[startY][startX] is Air && (cave[startY + 1][startX] is Rock or Sand) && (cave[startY + 1][startX - 1] is Air)) //move down left
+            {
+                startX--;
+                startY++;
+            }
+            else if (cave[startY][startX] is Air && (cave[startY + 1][startX] is Rock or Sand) && (cave[startY + 1][startX + 1] is Air)) //move down right
+            {
+                startX++;
+                startY++;
+            }
+            else
+            {
+                cave[startY][startX] = Sand;
+                counter++;
+                break;
+            }
+        }
+
+        if (startX is 500 && startY is 0)
+            break;
+    }
+
+    Console.WriteLine(counter);
+}
 
 record Day11Monkey(
     List<BigInteger> ItemWorryLevels,
