@@ -1,4 +1,7 @@
-﻿using System.Numerics;
+﻿using System.Linq;
+using System.Numerics;
+using System.Threading.Tasks.Dataflow;
+using System.Xml;
 
 void Day1()
 {
@@ -1365,6 +1368,105 @@ void Day14_Part2()
 
     Console.WriteLine(counter);
 }
+
+void Day15()
+{
+    var sampleData = File.ReadAllLines("Day15.txt");
+
+    var coordinates = sampleData.Select(line => line.Substring("Sensor at x=".Length))
+        .Select(line => line.Split(": closest beacon is at x="))
+        .Select<string[], (Coordinates Sensor, Coordinates Beacon)>(coords =>
+        {
+            Coordinates Transform(string coord)
+            {
+                var xy = coord.Split(", y=");
+                return new(long.Parse(xy[0]), long.Parse(xy[1]));
+            }
+
+            return (Transform(coords[0]), Transform(coords[1]));
+        })
+        .ToArray();
+
+    var minX = coordinates.MinBy(coordinate => coordinate.Beacon.X).Beacon.X;
+
+    long ManhattanDistance(Coordinates sensor, Coordinates beacon)
+    {
+        return Math.Abs(sensor.X - beacon.X) + Math.Abs(sensor.Y - beacon.Y);
+    }
+
+    foreach (var coordinate in coordinates)
+    {
+        var dist = ManhattanDistance(coordinate.Sensor, coordinate.Beacon);
+        if (coordinate.Sensor.X - dist < minX)
+            minX = coordinate.Sensor.X - dist;
+    }
+
+    var maxX = coordinates.MaxBy(coordinate => coordinate.Beacon.X).Beacon.X;
+
+    foreach (var coordinate in coordinates)
+    {
+        var dist = ManhattanDistance(coordinate.Sensor, coordinate.Beacon);
+        if (coordinate.Sensor.X + dist > maxX)
+            maxX = coordinate.Sensor.X + dist;
+    }
+
+    var y = 2000000L;
+    var counter = 0;
+    for (long i = minX; i <= maxX; ++i)
+    {
+        if (coordinates.Any(s => ManhattanDistance(s.Sensor, new(i, y)) <= ManhattanDistance(s.Sensor, s.Beacon)) 
+            && !coordinates.Any(coords => (coords.Sensor.X == i && coords.Sensor.Y == y) || (coords.Beacon.X == i && coords.Beacon.Y == y)))
+            counter++;
+    }
+
+    Console.WriteLine(counter);
+}
+
+void Day15_Part2()
+{
+    var sampleData = File.ReadAllLines("Day15.txt");
+
+    var coordinates = sampleData.Select(line => line.Substring("Sensor at x=".Length))
+        .Select(line => line.Split(": closest beacon is at x="))
+        .Select<string[], (Coordinates Sensor, Coordinates Beacon)>(coords =>
+        {
+            Coordinates Transform(string coord)
+            {
+                var xy = coord.Split(", y=");
+                return new(long.Parse(xy[0]), long.Parse(xy[1]));
+            }
+
+            return (Transform(coords[0]), Transform(coords[1]));
+        })
+        .ToArray();
+
+   
+
+    long ManhattanDistance(Coordinates sensor, Coordinates beacon)
+    {
+        return Math.Abs(sensor.X - beacon.X) + Math.Abs(sensor.Y - beacon.Y);
+    }
+
+    var minValue = 0;
+    var maxValue = 20;
+
+    for (long x = minValue; x <= maxValue; ++x)
+    {
+        for (long y = minValue; y <= maxValue; ++y)
+        {
+            if (coordinates.Any(s => ManhattanDistance(s.Sensor, new(x, y)) <= ManhattanDistance(s.Sensor, s.Beacon))
+                || coordinates.Any(coords => (coords.Sensor.X == x && coords.Sensor.Y == y) || (coords.Beacon.X == x && coords.Beacon.Y == y)))
+            {
+            }
+            else
+            {
+                Console.WriteLine(x + " " + y);
+            }
+        }
+    }
+}
+
+record Coordinates(long X, long Y);
 
 record Day11Monkey(
     List<BigInteger> ItemWorryLevels,
